@@ -38,9 +38,13 @@ def get_my_invitations(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    print(f"DEBUG: User ID: {current_user.id}, Email: {current_user.email}")
+    
     invitations = db.query(Invitation).filter(
         Invitation.inviter_id == current_user.id
     ).all()
+    
+    print(f"DEBUG: Found {len(invitations)} invitations")
     
     result = []
     for inv in invitations:
@@ -97,6 +101,8 @@ def get_invitation_stats(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    print(f"DEBUG Stats: User ID: {current_user.id}")
+    
     total_sent = db.query(Invitation).filter(Invitation.inviter_id == current_user.id).count()
     accepted = db.query(Invitation).filter(
         Invitation.inviter_id == current_user.id,

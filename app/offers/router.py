@@ -37,7 +37,11 @@ def get_my_offers(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    print(f"DEBUG Offers: User ID: {current_user.id}, Email: {current_user.email}")
+    
     offers = db.query(Offer).filter(Offer.creator_id == current_user.id).all()
+    print(f"DEBUG Offers: Found {len(offers)} offers")
+    
     return offers
 
 @router.get("/browse", response_model=List[OfferResponse])

@@ -55,7 +55,7 @@ def forgot_password(request: schemas.PasswordResetRequest, db: Session = Depends
     user = crud.get_user_by_email(db, request.email)
     if not user:
         # Don't reveal if email exists or not for security
-        return {"message": "If the email exists, a reset link has been sent"}
+        return {"message": "Se o email existir, um link de redefinição foi enviado"}
     
     # Generate reset token (valid for 1 hour)
     reset_token = create_access_token(
@@ -63,11 +63,17 @@ def forgot_password(request: schemas.PasswordResetRequest, db: Session = Depends
         expires_delta=3600  # 1 hour
     )
     
-    # In production, send email with reset link
-    # For now, just log the token
-    logger.info(f"Password reset token for {user.email}: {reset_token}")
+    # Enviar email
+    from app.core.email import send_password_reset_email
+    email_sent = send_password_reset_email(user.email, reset_token)
     
-    return {"message": "If the email exists, a reset link has been sent"}
+    if email_sent:
+        logger.info(f"Password reset email sent to: {user.email}")
+    else:
+        # Fallback: log token for development
+        logger.info(f"Password reset token for {user.email}: {reset_token}")
+    
+    return {"message": "Se o email existir, um link de redefinição foi enviado"}
 
 @router.post("/reset-password")
 def reset_password(request: schemas.PasswordReset, db: Session = Depends(get_db)):

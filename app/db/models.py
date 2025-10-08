@@ -29,6 +29,7 @@ class User(Base):
     onboarding_completed = Column(Boolean, default=False)
     plan = Column(Enum(UserPlan), default=UserPlan.FREE)
     is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=False)
     email_verified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

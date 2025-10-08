@@ -3,19 +3,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
 from app.db.database import get_db
 from app.db.models import User, Match, Message, Swipe, WantedPost
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, get_admin_user
 from app.admin import schemas
 from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 def check_admin(current_user):
-    if not current_user.email.endswith('@collapp.com'):
+    if not getattr(current_user, 'is_admin', False):
         raise HTTPException(status_code=403, detail="Admin access required")
 
 @router.get("/users")
-def get_all_users(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    check_admin(current_user)
+def get_all_users(db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     
     users = db.query(User).limit(100).all()
     result = []
@@ -41,8 +40,7 @@ def get_all_users(db: Session = Depends(get_db), current_user = Depends(get_curr
     return result
 
 @router.get("/metrics", response_model=schemas.PlatformMetrics)
-def get_platform_metrics(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    check_admin(current_user)
+def get_platform_metrics(db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     
     total_users = db.query(User).count()
     
@@ -61,8 +59,7 @@ def get_platform_metrics(db: Session = Depends(get_db), current_user = Depends(g
     )
 
 @router.post("/moderate/user/{user_id}")
-def moderate_user(user_id: str, action: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    check_admin(current_user)
+def moderate_user(user_id: str, action: str, db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -77,13 +74,11 @@ def moderate_user(user_id: str, action: str, db: Session = Depends(get_db), curr
     return {"success": True, "message": f"User {action}d successfully"}
 
 @router.post("/feature/user/{user_id}")
-def feature_user(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    check_admin(current_user)
+def feature_user(user_id: str, db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     return {"success": True, "message": f"User {user_id} featured"}
 
 @router.get("/dashboard")
-def get_dashboard(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    check_admin(current_user)
+def get_dashboard(db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     
     today = datetime.utcnow().date()
     today_start = datetime.combine(today, datetime.min.time())
