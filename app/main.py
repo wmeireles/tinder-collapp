@@ -35,7 +35,14 @@ logger = logging.getLogger(__name__)
 # Log de inicialização
 logger.info("=== INICIANDO COLLAPP BACKEND ===")
 
-Base.metadata.create_all(bind=engine)  # Criando tabelas
+# Forçar criação de tabelas em produção
+try:
+    Base.metadata.drop_all(bind=engine)  # Remove tabelas antigas
+    Base.metadata.create_all(bind=engine)  # Cria tabelas novas
+    print("✅ Tabelas criadas com sucesso!")
+except Exception as e:
+    print(f"⚠️ Erro ao criar tabelas: {e}")
+    Base.metadata.create_all(bind=engine)  # Tenta criar mesmo assim
 
 app = FastAPI(title="Collapp Auth API", version="1.0.0")
 
