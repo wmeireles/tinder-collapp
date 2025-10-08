@@ -1,14 +1,15 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Sync engine with connection pooling
+# Database URL with fallback
 DATABASE_URL = settings.DATABASE_URL or "postgresql://collapp_db_user:kLtOpKktAQfLLTv0DNCWESwCge3rUgm7@dpg-d3j7al2li9vc73dq7350-a/collapp_db"
+
+# Sync engine with connection pooling
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
@@ -22,18 +23,7 @@ engine = create_engine(
     }
 )
 
-# Async engine (opcional)
-DATABASE_URL_ASYNC = settings.DATABASE_URL_ASYNC or DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-async_engine = create_async_engine(
-    DATABASE_URL_ASYNC,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.DEBUG
-)
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
 
@@ -45,13 +35,7 @@ def get_db():
     finally:
         db.close()
 
-async def get_async_db():
-    """Dependency for async database sessions"""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+# Async functionality removed for deployment simplicity
 
 def check_db_connection():
     """Health check for database connection"""
