@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from typing import Dict, Optional
+from pydantic import BaseModel, field_validator
+from typing import Dict, Optional, Union
 from datetime import datetime
+import json
+import uuid
 
 class OfferCreate(BaseModel):
     title: str
@@ -31,6 +33,23 @@ class OfferResponse(BaseModel):
     status: str
     created_at: datetime
     
+    @field_validator('creator_id', mode='before')
+    @classmethod
+    def convert_uuid_to_str(cls, v):
+        if isinstance(v, uuid.UUID):
+            return str(v)
+        return v
+    
+    @field_validator('package_details', mode='before')
+    @classmethod
+    def parse_package_details(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except:
+                return {}
+        return v or {}
+    
     class Config:
         from_attributes = True
 
@@ -45,6 +64,13 @@ class OfferAcceptanceResponse(BaseModel):
     message: Optional[str]
     status: str
     created_at: datetime
+    
+    @field_validator('accepter_id', mode='before')
+    @classmethod
+    def convert_uuid_to_str(cls, v):
+        if isinstance(v, uuid.UUID):
+            return str(v)
+        return v
     
     class Config:
         from_attributes = True
