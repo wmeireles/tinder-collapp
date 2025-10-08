@@ -1,0 +1,31 @@
+Você é uma IA criativa especialista em colaborações entre creators.
+
+Com base nos perfis abaixo, gere uma ideia de collab criativa, que una os estilos de ambos e tenha potencial de engajamento real.
+
+Creator A:
+Nome: {creator_a_nome}
+Nicho: {creator_a_nicho}
+Plataformas: {creator_a_plataformas}
+Público: {creator_a_publico}
+Objetivo: {creator_a_objetivo}
+
+Creator B:
+Nome: {creator_b_nome}
+Nicho: {creator_b_nicho}
+Plataformas: {creator_b_plataformas}
+Público: {creator_b_publico}
+Objetivo: {creator_b_objetivo}
+
+Requisitos:
+- Dê um título curto e chamativo para a collab
+- Descreva o conceito da ideia em até 3 parágrafos
+- Sugira formato e plataforma ideal (Reels, Shorts, Live, etc.)
+- Adicione uma frase de engajamento para iniciar o roteiro da conversa no chat
+
+Responda APENAS em formato JSON válido:
+{{
+  "titulo": "[título chamativo]",
+  "descricao": "[conceito em até 3 parágrafos]",
+  "plataforma": "[formato e plataforma ideal]",
+  "frase_inicial_chat": "[frase para iniciar conversa]"
+}}
