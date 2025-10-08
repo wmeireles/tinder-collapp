@@ -6,11 +6,22 @@ import secrets
 from app.core.config import settings
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Extrair salt e hash
+    # Tentar novo formato primeiro (PBKDF2)
+    if '$' in hashed_password:
+        try:
+            salt, stored_hash = hashed_password.split('$')
+            computed_hash = hashlib.pbkdf2_hmac('sha256', plain_password.encode(), salt.encode(), 100000)
+            return secrets.compare_digest(stored_hash.encode(), computed_hash.hex().encode())
+        except:
+            pass
+    
+    # Fallback para bcrypt (senhas antigas)
     try:
-        salt, stored_hash = hashed_password.split('$')
-        computed_hash = hashlib.pbkdf2_hmac('sha256', plain_password.encode(), salt.encode(), 100000)
-        return secrets.compare_digest(stored_hash.encode(), computed_hash.hex().encode())
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        if len(plain_password.encode('utf-8')) > 72:
+            plain_password = plain_password[:72]
+        return pwd_context.verify(plain_password, hashed_password)
     except:
         return False
 
