@@ -8,8 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Sync engine with connection pooling
+DATABASE_URL = settings.DATABASE_URL or "postgresql://collapp_db_user:kLtOpKktAQfLLTv0DNCWESwCge3rUgm7@dpg-d3j7al2li9vc73dq7350-a/collapp_db"
 engine = create_engine(
-    settings.DATABASE_URL,
+    DATABASE_URL,
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
@@ -22,8 +23,9 @@ engine = create_engine(
 )
 
 # Async engine (opcional)
+DATABASE_URL_ASYNC = settings.DATABASE_URL_ASYNC or DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 async_engine = create_async_engine(
-    settings.DATABASE_URL_ASYNC,
+    DATABASE_URL_ASYNC,
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
