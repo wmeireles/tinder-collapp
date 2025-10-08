@@ -1,22 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import hashlib
+import secrets
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Bcrypt tem limite de 72 bytes
-    if len(plain_password.encode('utf-8')) > 72:
-        plain_password = plain_password[:72]
-    return pwd_context.verify(plain_password, hashed_password)
+    # Extrair salt e hash
+    try:
+        salt, stored_hash = hashed_password.split('$')
+        computed_hash = hashlib.pbkdf2_hmac('sha256', plain_password.encode(), salt.encode(), 100000)
+        return secrets.compare_digest(stored_hash.encode(), computed_hash.hex().encode())
+    except:
+        return False
 
 def get_password_hash(password: str) -> str:
-    # Bcrypt tem limite de 72 bytes
-    if len(password.encode('utf-8')) > 72:
-        password = password[:72]
-    return pwd_context.hash(password)
+    # Usar PBKDF2 com SHA256 (sem limite de tamanho)
+    salt = secrets.token_hex(16)
+    hash_obj = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000)
+    return f"{salt}${hash_obj.hex()}"
 
 def create_access_token(data: dict, expires_delta: Optional[int] = None):
     to_encode = data.copy()
