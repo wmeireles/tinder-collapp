@@ -49,11 +49,12 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "https://collapp-frontend.onrender.com",
+        "https://collapp-backend.onrender.com",
         "https://*.onrender.com",
         "https://*.vercel.app"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"]
 )
