@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.models import User, Offer, OfferAcceptance
 from app.offers.schemas import OfferCreate, OfferUpdate, OfferResponse, OfferAcceptanceCreate, OfferAcceptanceResponse
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, get_admin_user
 from typing import List
 import json
 
@@ -153,3 +153,27 @@ def accept_offer(
     db.refresh(db_acceptance)
     
     return db_acceptance
+
+@router.post("/admin/create", response_model=OfferResponse)
+def admin_create_offer(
+    offer: OfferCreate,
+    admin_user: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Admin endpoint to create promotional offers"""
+    db_offer = Offer(
+        creator_id=admin_user.id,
+        title=offer.title,
+        description=offer.description,
+        package_details=json.dumps(offer.package_details),
+        price=offer.price,
+        currency=offer.currency,
+        delivery_time=offer.delivery_time,
+        status="active"
+    )
+    
+    db.add(db_offer)
+    db.commit()
+    db.refresh(db_offer)
+    
+    return db_offer
