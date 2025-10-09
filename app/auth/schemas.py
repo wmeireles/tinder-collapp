@@ -25,6 +25,7 @@ class UserResponse(BaseModel):
     email: str
     name: Optional[str] = None
     plan: Optional[str] = None
+    is_admin: Optional[bool] = False
     created_at: Optional[datetime] = None
 
     @field_serializer('id')
