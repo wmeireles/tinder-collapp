@@ -110,7 +110,7 @@ def create_admin_user():
         
         admin_user = User(
             email="admin@admin.com",
-            hashed_password=hashed_password,
+            password_hash=hashed_password,
             name="Admin",
             is_admin=True,
             is_active=True,
