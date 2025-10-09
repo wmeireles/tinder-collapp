@@ -16,7 +16,7 @@ def check_admin(current_user):
 @router.get("/users")
 def get_all_users(db: Session = Depends(get_db), admin_user = Depends(get_admin_user)):
     
-    users = db.query(User).limit(100).all()
+    users = db.query(User).order_by(User.created_at.desc()).limit(100).all()
     result = []
     
     for user in users:
@@ -28,13 +28,17 @@ def get_all_users(db: Session = Depends(get_db), admin_user = Depends(get_admin_
         
         result.append({
             "id": str(user.id),
-            "name": user.name,
+            "name": user.name or "Usuário",
             "email": user.email,
-            "created_at": user.created_at,
-            "onboarding_completed": user.onboarding_completed,
+            "plan": user.plan.value if user.plan else "FREE",
+            "is_admin": user.is_admin,
             "is_active": user.is_active,
+            "onboarding_completed": user.onboarding_completed,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
             "matches_count": matches_count,
-            "messages_count": messages_count
+            "messages_count": messages_count,
+            "avatar": "/placeholder-avatar.svg",
+            "handle": user.email.split('@')[0]
         })
     
     return result
