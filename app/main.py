@@ -90,23 +90,38 @@ def health_check():
 def test_endpoint():
     return {"message": "Test endpoint working - no auth required", "status": "ok"}
 
-@app.get("/make-admin/{email}")
-def make_admin_endpoint(email: str):
+@app.get("/create-admin")
+def create_admin_user():
     from sqlalchemy.orm import sessionmaker
     from app.db.models import User
+    from app.core.security import get_password_hash
     
     SessionLocal = sessionmaker(bind=engine)
     db = SessionLocal()
     
     try:
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            return {"error": "User not found"}
+        existing = db.query(User).filter(User.email == "admin@admin.com").first()
+        if existing:
+            existing.is_admin = True
+            db.commit()
+            return {"message": "Admin already exists", "email": "admin@admin.com", "password": "admin"}
         
-        user.is_admin = True
+        hashed_password = get_password_hash("admin")
+        
+        admin_user = User(
+            email="admin@admin.com",
+            hashed_password=hashed_password,
+            name="Admin",
+            is_admin=True,
+            is_active=True,
+            onboarding_completed=True
+        )
+        
+        db.add(admin_user)
         db.commit()
         
-        return {"message": f"User {user.name} is now admin!", "email": email}
+        return {"message": "Admin created!", "email": "admin@admin.com", "password": "admin"}
+        
     except Exception as e:
         return {"error": str(e)}
     finally:
