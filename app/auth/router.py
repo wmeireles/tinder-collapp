@@ -27,7 +27,11 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.Token)
 def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    user = crud.authenticate_user(db, user_credentials.email, user_credentials.password)
+    # Limpar email se tiver mailto:
+    clean_email = user_credentials.email.replace('mailto:', '') if user_credentials.email.startswith('mailto:') else user_credentials.email
+    logger.info(f"Login attempt - Original: {user_credentials.email}, Clean: {clean_email}")
+    
+    user = crud.authenticate_user(db, clean_email, user_credentials.password)
     if not user:
         logger.warning(f"Failed login attempt for email: {user_credentials.email}")
         raise HTTPException(
