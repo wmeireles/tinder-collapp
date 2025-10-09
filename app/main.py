@@ -89,3 +89,23 @@ def health_check():
 @app.get("/test")
 def test_endpoint():
     return {"message": "Test endpoint working - no auth required", "status": "ok"}
+
+@app.post("/make-admin/{email}")
+def make_admin_endpoint(email: str):
+    from app.db.database import get_db
+    from app.db.models import User
+    
+    db = next(get_db())
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            return {"error": "User not found"}
+        
+        user.is_admin = True
+        db.commit()
+        
+        return {"message": f"User {user.name} is now admin!"}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        db.close()
