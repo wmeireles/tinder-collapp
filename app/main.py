@@ -90,12 +90,14 @@ def health_check():
 def test_endpoint():
     return {"message": "Test endpoint working - no auth required", "status": "ok"}
 
-@app.post("/make-admin/{email}")
+@app.get("/make-admin/{email}")
 def make_admin_endpoint(email: str):
-    from app.db.database import get_db
+    from sqlalchemy.orm import sessionmaker
     from app.db.models import User
     
-    db = next(get_db())
+    SessionLocal = sessionmaker(bind=engine)
+    db = SessionLocal()
+    
     try:
         user = db.query(User).filter(User.email == email).first()
         if not user:
@@ -104,7 +106,7 @@ def make_admin_endpoint(email: str):
         user.is_admin = True
         db.commit()
         
-        return {"message": f"User {user.name} is now admin!"}
+        return {"message": f"User {user.name} is now admin!", "email": email}
     except Exception as e:
         return {"error": str(e)}
     finally:
